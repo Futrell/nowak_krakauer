@@ -1,5 +1,5 @@
 """ Implementation of basic language evolution model from Nowak & Krakauer (1999) """
-
+import math
 import random
 import itertools
 import torch
@@ -19,7 +19,7 @@ def basic_population_fitness(Ps, Qs, lam=1/2):
     
     # an agent doesn't interact with itself, so blank out the entries R[i,i,...]
     agents = range(R.shape[0])
-    R[agents, agents, :, :, :] = 0
+    R[agents, agents] = 0
     
     # now get fitness for each agent
     return lam * torch.einsum('abiji -> a', R) + (1-lam) * torch.einsum('abiji -> b', R)
