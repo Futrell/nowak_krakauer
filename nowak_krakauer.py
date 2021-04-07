@@ -24,6 +24,16 @@ def basic_population_fitness(Ps, Qs, lam=1/2):
     # now get fitness for each agent
     return lam * torch.einsum('abiji -> a', R) + (1-lam) * torch.einsum('abiji -> b', R)
 
+def extended_population_fitness(Ps, Qs, U, A, lam=1/2):
+    """ Incorporate noise and different values of meanings """
+    # form tensor of shape B x B x M x S x U x M
+    R = Ps[:, None, :, :, None, None] * U[None, None, None, None, :, :, None] * Qs[None, :, None, :, None, :, :] * A[None, None, None, None, None, None, :]
+
+    agents = range(R.shape[0])
+    R[agents, agents] = 0
+
+    return lam * torch.einsum('abijkii -> a', R) + (1-lam) * torch.einsum('abijkii -> b')
+    
 def mutate(p, num_samples):
     eye = torch.eye(p.shape[-1])
     sample_indices = torch.stack([torch.multinomial(sub_p, num_samples, replacement=True) for sub_p in p])
